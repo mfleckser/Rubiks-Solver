@@ -1,3 +1,0 @@
-/Users/mfleckser/Documents/Personal/Coding/rubik_solver/build/CMakeFiles/rubiks.dir
-/Users/mfleckser/Documents/Personal/Coding/rubik_solver/build/CMakeFiles/edit_cache.dir
-/Users/mfleckser/Documents/Personal/Coding/rubik_solver/build/CMakeFiles/rebuild_cache.dir

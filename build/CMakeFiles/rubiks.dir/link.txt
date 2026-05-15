@@ -1,1 +1,0 @@
-/usr/bin/clang++ -g -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/rubiks.dir/src/main.cpp.o CMakeFiles/rubiks.dir/src/graphics/Renderer.cpp.o CMakeFiles/rubiks.dir/src/graphics/Meshes.cpp.o -o rubiks  /opt/homebrew/Cellar/raylib/5.5/lib/libraylib.dylib -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib
