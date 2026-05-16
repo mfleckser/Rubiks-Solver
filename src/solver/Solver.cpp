@@ -137,17 +137,3 @@ std::vector<Move> Solver::bfs_solve(State start) {
 
     return {};
 }
-
-State Solver::scramble(int depth) {
-    State state = {SOLVED_CORNERS, SOLVED_EDGES};
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dist(0, 11);
-
-    for (int i = 0; i < depth; i++) {
-        state = make_move(state, ALL_MOVES[dist(gen)]);
-    }
-
-    return state;
-}

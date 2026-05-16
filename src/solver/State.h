@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <random>
 
 struct State {
     uint64_t corners, edges;
@@ -61,3 +62,6 @@ const int edge_moves[6][4] = {
 };
 
 State make_move(State start, Move move);
+State make_moves(State start, std::vector<Move> moves);
+std::vector<Move> get_random_moves(int n);
+State scramble(int depth);

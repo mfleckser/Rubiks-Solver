@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "Meshes.h"
 #include "Animation.h"
+#include "../solver/Solver.h"
 
 class Renderer {
     public:

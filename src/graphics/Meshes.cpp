@@ -1,6 +1,8 @@
 #include "Meshes.h"
 
 Cube::Cube() {
+    state = {SOLVED_CORNERS, SOLVED_EDGES};
+
     global = MatrixIdentity();
     
     cubeMesh = GenMeshCube(1, 1, 1);
@@ -9,10 +11,9 @@ Cube::Cube() {
     cubeMat = LoadMaterialDefault();
     cubeMat.maps[MATERIAL_MAP_DIFFUSE].color = BLACK;
     
-    Color faceColors[] = { WHITE, YELLOW, ORANGE, RED, BLUE, GREEN };
     for (int c = 0; c < 6; c++) {
         faceMats[c] = LoadMaterialDefault();
-        faceMats[c].maps[MATERIAL_MAP_DIFFUSE].color = faceColors[c];
+        faceMats[c].maps[MATERIAL_MAP_DIFFUSE].color = SIDE_COLORS[c];
     }
     
     for (int i = -1; i <= 1; i++)
@@ -58,6 +59,21 @@ std::vector<Block*> Cube::getSide(Side side) {
     return sideBlocks;
 }
 
+void Cube::updateState(Side side, int dir) {
+    state = make_move(state, {side, dir});
+}
+
+void Cube::makeMove(Side side, int dir) {
+    std::vector<Block*> blocks = getSide(side);
+    Vector3 axis = Vector3Scale(SIDE_NORMS[side], dir);
+
+    for (Block* b : blocks) {
+        b->cube = MatrixMultiply(b->cube, MatrixRotate(axis, -PI/2));
+    }
+
+    updateState(side, dir);
+}
+
 Face::Face(Side side) : side(side) {
     switch (side) {
         case TOP:
@@ -67,10 +83,10 @@ Face::Face(Side side) : side(side) {
             face = MatrixMultiply(MatrixRotateX(PI/2), MatrixTranslate(0, -0.5, 0));
             break;
         case RIGHT:
-            face = MatrixMultiply(MatrixRotateY(PI/2), MatrixTranslate(-0.5, 0, 0));
+            face = MatrixMultiply(MatrixRotateY(PI/2), MatrixTranslate(0.5, 0, 0));
             break;
         case LEFT:
-            face = MatrixMultiply(MatrixRotateY(PI/2), MatrixTranslate(0.5, 0, 0));
+            face = MatrixMultiply(MatrixRotateY(PI/2), MatrixTranslate(-0.5, 0, 0));
             break;
         case FRONT:
             face = MatrixTranslate(0, 0, 0.5);
@@ -84,9 +100,9 @@ Face::Face(Side side) : side(side) {
 Block::Block(int i, int j, int k) {
     cube = MatrixTranslate(i, j, k);
     if (i == 1) {
-        faces.push_back(Face(LEFT));
-    } else if (i == -1) {
         faces.push_back(Face(RIGHT));
+    } else if (i == -1) {
+        faces.push_back(Face(LEFT));
     }
 
     if (j == 1) {

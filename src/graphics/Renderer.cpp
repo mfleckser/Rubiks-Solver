@@ -2,7 +2,7 @@
 
 Renderer::Renderer() {
     InitWindow(800, 800, "Rubik's Cube Solver");
-    // DisableCursor();
+    DisableCursor();
 
     cam = { 0 };
     cam.position = { 0.0f, 6.0f, 6.0f };
@@ -53,8 +53,8 @@ void Renderer::update() {
         cube->rotatePitch(2 * GetFrameTime());
     }
     Vector2 delta = Vector2Scale(GetMouseDelta(), 0.3 * GetFrameTime());
-    // cube->rotateYaw(delta.x);
-    // cube->rotatePitch(delta.y);
+    cube->rotateYaw(delta.x);
+    cube->rotatePitch(delta.y);
     
     // Move inputs
     bool flip = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
@@ -85,7 +85,8 @@ void Renderer::update() {
         if (!animations.empty()) {
             Side side = animations.front().side;
             std::vector<Block*> blocks = cube->getSide(side);
-            float dir = animations.front().flip ? 1 : -1;
+            float dir = animations.front().flip ? -1 : 1;
+            cube->updateState(side, dir);
             activeAnimation = Animation(blocks, Vector3Scale(SIDE_NORMS[side], dir));
             animations.pop();
         }
@@ -94,5 +95,22 @@ void Renderer::update() {
     // Reset cube
     if (IsKeyPressed(KEY_SPACE)) {
         cube = std::make_unique<Cube>();
+    }
+
+    // Scramble cube
+    if (IsKeyPressed(KEY_X)) {
+        std::vector<Move> moves = get_random_moves(10);
+        for (Move& m : moves) {
+            cube->makeMove(Side(m.side), m.direction);
+        }
+    }
+
+    // Solve cube
+    if (IsKeyPressed(KEY_S)) {
+        Solver s;
+        std::vector<Move> moves = s.solve(cube->state);
+        for (Move& m : moves) {
+            animations.push(QueuedAnimation(Side(m.side), m.direction == -1));
+        }
     }
 }

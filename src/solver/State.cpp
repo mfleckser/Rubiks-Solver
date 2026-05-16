@@ -90,3 +90,29 @@ State make_move(State start, Move move) {
 
     return {new_corners, new_edges};
 }
+
+State make_moves(State start, std::vector<Move> moves) {
+    for (Move& m : moves) {
+        start = make_move(start, m);
+    }
+
+    return start;
+}
+
+std::vector<Move> get_random_moves(int n) {
+    std::vector<Move> moves;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(0, 11);
+
+    for (int i = 0; i < n; i++) {
+        moves.push_back(ALL_MOVES[dist(gen)]);
+    }
+
+    return moves;
+}
+
+State scramble(int depth) {
+    return make_moves({SOLVED_CORNERS, SOLVED_EDGES}, get_random_moves(depth));
+}

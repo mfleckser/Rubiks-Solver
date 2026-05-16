@@ -26,7 +26,7 @@ struct Animation {
         }
 
         for (Block *b : blocks) {
-            b->cube = MatrixMultiply(b->cube, MatrixRotate(axis, delta));
+            b->cube = MatrixMultiply(b->cube, MatrixRotate(axis, -delta));
         }
     }
 };
