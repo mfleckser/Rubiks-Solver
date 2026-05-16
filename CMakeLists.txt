@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(raylib REQUIRED)
 
-set(SOURCES
+set(SIM_SOURCES
     src/main.cpp
 
     src/graphics/Renderer.cpp
@@ -17,7 +17,14 @@ set(SOURCES
     src/solver/Solver.cpp
 )
 
-add_executable(rubiks ${SOURCES})
+set(BM_SOURCES
+    src/solver/Benchmark.cpp
+    src/solver/Solver.cpp
+    src/solver/State.cpp
+)
+
+add_executable(rubiks ${SIM_SOURCES})
+add_executable(benchmark ${BM_SOURCES})
 
 target_include_directories(rubiks PRIVATE
     src

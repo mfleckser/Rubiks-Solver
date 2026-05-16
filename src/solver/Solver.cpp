@@ -7,8 +7,6 @@
 #include <random>
 
 std::vector<Move> Solver::rebuild_path(std::unordered_map<State, Move> prev_move) {
-    std::cout << "Rebuilding path..." << std::endl;
-
     std::deque<Move> solution;
 
     State curr = GOAL;
@@ -24,8 +22,6 @@ std::vector<Move> Solver::rebuild_path(std::unordered_map<State, Move> prev_move
 }
 
 std::vector<Move> Solver::rebuild_bidir_path(std::unordered_map<State, Move> prev_f, std::unordered_map<State, Move> prev_b, State meet) {
-    std::cout << "Rebuilding bidirectional path..." << std::endl;
-
     std::deque<Move> solution;
 
     State curr = meet;
