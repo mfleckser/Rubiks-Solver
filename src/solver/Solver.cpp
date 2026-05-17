@@ -42,21 +42,106 @@ std::vector<Move> Solver::rebuild_bidir_path(std::unordered_map<State, Move> pre
     return std::vector<Move>(solution.begin(), solution.end());
 }
 
-double Solver::facewise_heuristic(State state) {
+double Solver::facewise_heuristic(State state, State target) {
     double count = 0;
 
     for (int i = 0; i < 40; i++) {
-        count += ((state.corners >> i) ^ (SOLVED_CORNERS >> i)) & 1;
+        count += ((state.corners >> i) ^ (target.corners >> i)) & 1;
     }
 
     for (int i = 0; i < 60; i++) {
-        count += ((state.edges >> i) ^ (SOLVED_EDGES >> i)) & 1;
+        count += ((state.edges >> i) ^ (target.edges >> i)) & 1;
     }
 
     return count / 40;
 }
 
 std::vector<Move> Solver::solve(State start) {
+    std::unordered_map<State, double> f_score_f, f_score_b, g_score_f, g_score_b;
+    std::unordered_map<State, Move> prev_f, prev_b;
+
+    using Item = std::pair<double, State>;
+    auto cmp = [](const Item &a, const Item &b) {
+        return a.first > b.first;
+    };
+    std::priority_queue<Item, std::vector<Item>, decltype(cmp)> open_f(cmp), open_b(cmp);
+
+    double best = __DBL_MAX__;
+    State meet;
+
+    g_score_f[start] = 0;
+    g_score_b[GOAL] = 0;
+    f_score_f[start] = facewise_heuristic(start, GOAL);
+    f_score_b[GOAL] = facewise_heuristic(GOAL, start);
+    open_f.push({f_score_f[start], start});
+    open_b.push({f_score_b[GOAL], GOAL});
+
+    while (!open_f.empty() && !open_b.empty()) {
+        double f_front = open_f.top().first;
+        double b_front = open_b.top().first;
+        if (best <= f_front + b_front) {
+            return rebuild_bidir_path(prev_f, prev_b, meet);
+        }
+
+        State curr;
+        bool choose_f = f_front <= b_front;
+
+        if (choose_f) {
+            // Relax forward
+            auto [f_top, curr] = open_f.top();
+            open_f.pop();
+            if (f_top > f_score_f[curr]) continue;
+            double g_curr = g_score_f[curr];
+
+            for (Move m : ALL_MOVES) {
+                State n = make_move(curr, m);
+                double new_dist = g_curr + 1;
+                auto it = g_score_f.find(n);
+                if (it == g_score_f.end() || new_dist < it->second) {
+                    prev_f[n] = m;
+                    g_score_f[n] = new_dist;
+                    f_score_f[n] = new_dist + facewise_heuristic(n, GOAL);
+                    open_f.push({f_score_f[n], n});
+
+                    auto bit = g_score_b.find(n);
+                    if (bit != g_score_b.end() && new_dist + bit->second < best) {
+                        best = new_dist + bit->second;
+                        meet = n;
+                    }
+                }
+            }
+        } else {
+            // Relax backward
+            auto [f_top, curr] = open_b.top();
+            open_b.pop();
+            if (f_top > f_score_b[curr]) continue;
+            double g_curr = g_score_b[curr];
+
+            for (Move m : ALL_MOVES) {
+                State n = make_move(curr, m);
+                double new_dist = g_curr + 1;
+                auto it = g_score_b.find(n);
+                if (it == g_score_b.end() || new_dist < it->second) {
+                    m.direction *= -1;
+                    prev_b[n] = m;
+                    g_score_b[n] = new_dist;
+                    f_score_b[n] = new_dist + facewise_heuristic(n, start);
+                    open_b.push({f_score_b[n], n});
+
+                    auto fit = g_score_f.find(n);
+                    if (fit != g_score_f.end() && new_dist + fit->second < best) {
+                        best = new_dist + fit->second;
+                        meet = n;
+                    }
+                }
+            }
+        }
+    }
+
+    return {};
+}
+
+std::vector<Move> Solver::astar_solve(State start) {
     using Item = std::pair<double, State>;
     auto cmp = [](const Item &a, const Item &b) {
         return a.first > b.first;
@@ -66,9 +151,9 @@ std::vector<Move> Solver::solve(State start) {
     std::unordered_map<State, Move> prev_move;
     std::unordered_map<State, double> f_score, g_score;
     
-    open.push({0, start});
     g_score[start] = 0;
-    f_score[start] = facewise_heuristic(start);
+    f_score[start] = facewise_heuristic(start, GOAL);
+    open.push({f_score[start], start});
 
     while (!open.empty()) {
         State curr = open.top().second;
@@ -80,11 +165,11 @@ std::vector<Move> Solver::solve(State start) {
 
         for (Move m : ALL_MOVES) {
             State n = make_move(curr, m);
-            int new_dist = g_score[curr] + 1;
+            double new_dist = g_score[curr] + 1;
             if (!g_score.contains(n) || new_dist < g_score[n]) {
                 prev_move[n] = m;
                 g_score[n] = new_dist;
-                f_score[n] = new_dist + facewise_heuristic(n);
+                f_score[n] = new_dist + facewise_heuristic(n, GOAL);
                 open.push({f_score[n], n});
             }
         }
