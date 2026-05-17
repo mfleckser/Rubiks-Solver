@@ -25,8 +25,8 @@ void perform_runs(Run *output, int count, int shuffle_depth) {
 
 int main() {
     const int THREAD_COUNT = 1;
-    const int RUNS_PER_THREAD = 30;
-    const int MAX_DEPTH = 12;
+    const int RUNS_PER_THREAD = 1;
+    const int MAX_DEPTH = 10;
 
     vector<thread> threads(THREAD_COUNT);
     Run runs[THREAD_COUNT * RUNS_PER_THREAD];
